@@ -1,11 +1,9 @@
 from typing import Any, ClassVar, Literal
 
-from pydantic import Field, field_validator, model_validator
-
 from memos import settings
 from memos.configs.base import BaseConfig
 from memos.log import get_logger
-
+from pydantic import Field, field_validator, model_validator
 
 logger = get_logger(__name__)
 
@@ -39,6 +37,26 @@ class QdrantVecDBConfig(BaseVecDBConfig):
         return self
 
 
+class ChromaVecDBConfig(BaseVecDBConfig):
+    """Configuration for Chroma vector database."""
+
+    host: str = Field(description="Host for Chroma")
+    port: int = Field(description="Port for Chroma")
+    username: str | None = Field(default=None, description="Username for Chroma")
+    password: str | None = Field(default=None, description="Password for Chroma")
+    path: str | None = Field(default=None, description="Path for Chroma")
+
+    @model_validator(mode="after")
+    def set_default_path(self):
+        if all(x is None for x in (self.host, self.port, self.path)):
+            logger.warning(
+                "No host, port, or path provided for Chroma. Defaulting to local path: %s",
+                settings.MEMOS_DIR / "chroma",
+            )
+            self.path = str(settings.MEMOS_DIR / "chroma")
+        return self
+
+
 class VectorDBConfigFactory(BaseConfig):
     """Factory class for creating vector database configurations."""
 
@@ -47,6 +65,7 @@ class VectorDBConfigFactory(BaseConfig):
 
     backend_to_class: ClassVar[dict[str, Any]] = {
         "qdrant": QdrantVecDBConfig,
+        "chroma": ChromaVecDBConfig
     }
 
     @field_validator("backend")
