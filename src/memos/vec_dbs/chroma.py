@@ -15,8 +15,8 @@ class ChromaVecDB(BaseVecDB):
     """Qdrant vector database implementation."""
 
     @require_python_package(
-        import_name="chroma",
-        install_command="pip install chroma"
+        import_name="chromadb",
+        install_command="pip install chromadb-client"
     )
     def __init__(self, config: ChromaVecDBConfig):
         """Initialize the Qdrant vector database and the collection."""
