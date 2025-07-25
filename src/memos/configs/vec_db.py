@@ -1,9 +1,11 @@
 from typing import Any, ClassVar, Literal
 
+from pydantic import Field, field_validator, model_validator
+
 from memos import settings
 from memos.configs.base import BaseConfig
 from memos.log import get_logger
-from pydantic import Field, field_validator, model_validator
+
 
 logger = get_logger(__name__)
 
@@ -65,7 +67,7 @@ class VectorDBConfigFactory(BaseConfig):
 
     backend_to_class: ClassVar[dict[str, Any]] = {
         "qdrant": QdrantVecDBConfig,
-        "chroma": ChromaVecDBConfig
+        "chroma": ChromaVecDBConfig,
     }
 
     @field_validator("backend")
