@@ -38,9 +38,17 @@ class ChromaVecDB(BaseVecDB):
 
         self.create_collection()
 
+    def get_collection(self):
+        """Get a collection by name."""
+        try:
+            return self.client.get_collection(self.config.collection_name)
+        except Exception:
+            self.create_collection()
+            return self.client.get_collection(self.config.collection_name)
+
     def create_collection(self) -> None:
         if self.collection_exists(self.config.collection_name):
-            collection_info = self.client.get_collection(self.config.collection_name)
+            collection_info = self.get_collection()
             logger.warning(
                 f"Collection '{self.config.collection_name}' (vector dimension: {collection_info.config.params.vectors.size}) already exists. Skipping creation."
             )
@@ -82,7 +90,7 @@ class ChromaVecDB(BaseVecDB):
             List of search results with distance scores and payloads.
         """
 
-        response = self.client.get_collection(self.config.collection_name).query(
+        response = self.get_collection().query(
             query_embeddings=query_vector,
             n_results=top_k,
             where_document=filter,
@@ -100,7 +108,7 @@ class ChromaVecDB(BaseVecDB):
 
     def get_by_id(self, id: str) -> VecDBItem | None:
         """Get a single item by ID."""
-        response = self.client.get_collection(self.config.collection_name).get(ids=[id])
+        response = self.get_collection().get(ids=[id])
 
         if not response["ids"]:
             return None
@@ -114,7 +122,7 @@ class ChromaVecDB(BaseVecDB):
     def get_by_ids(self, ids: list[str]) -> list[VecDBItem]:
         """Get multiple items by their IDs."""
 
-        response = self.client.get_collection(self.config.collection_name).get(ids=ids)
+        response = self.get_collection().get(ids=ids)
 
         if not response["ids"]:
             return []
@@ -139,9 +147,7 @@ class ChromaVecDB(BaseVecDB):
         Returns:
             List of items including vectors and payload that match the filter"""
 
-        response = self.client.get_collection(self.config.collection_name).get(
-            where=filter, limit=limit
-        )
+        response = self.get_collection().get(where=filter, limit=limit)
 
         logger.info(f"Qdrant retrieve by filter completed with {len(response['ids'])} results.")
 
@@ -184,12 +190,12 @@ class ChromaVecDB(BaseVecDB):
         for item in data:
             if isinstance(item, dict):
                 item = VecDBItem.from_dict(item)
-            ids.append(item.id)
+            ids.append(str(item.id))
             embeddings.append(item.vector)
             metadatas.append(item.payload.get("metadata"))
             documents.append(item.payload.get("memory"))
 
-        self.client.get_collection(self.config.collection_name).upsert(
+        self.get_collection().upsert(
             ids=ids, embeddings=embeddings, metadatas=metadatas, documents=documents
         )
 
@@ -201,7 +207,7 @@ class ChromaVecDB(BaseVecDB):
 
         if data.vector:
             # For vector updates (with or without payload), use upsert with the same ID
-            self.client.get_collection(self.config.collection_name).upsert(
+            self.get_collection().upsert(
                 ids=[id],
                 embeddings=[data.vector],
                 metadatas=[data.payload.get("metadata")],
@@ -209,9 +215,7 @@ class ChromaVecDB(BaseVecDB):
             )
         else:
             # For payload-only updates
-            self.client.get_collection(self.config.collection_name).upsert(
-                ids=[id], metadatas=[data.payload.get("metadata")]
-            )
+            self.get_collection().upsert(ids=[id], metadatas=[data.payload.get("metadata")])
 
     def upsert(self, data: list[VecDBItem | dict[str, Any]]) -> None:
         """
@@ -225,7 +229,7 @@ class ChromaVecDB(BaseVecDB):
 
     def delete(self, ids: list[str]) -> None:
         """Delete items from the vector database."""
-        self.client.get_collection(self.config.collection_name).delete(ids=ids)
+        self.get_collection().delete(ids=ids)
 
     def ensure_payload_indexes(self, fields: list[str]) -> None:
         """

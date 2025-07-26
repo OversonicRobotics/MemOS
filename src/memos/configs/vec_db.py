@@ -42,8 +42,8 @@ class QdrantVecDBConfig(BaseVecDBConfig):
 class ChromaVecDBConfig(BaseVecDBConfig):
     """Configuration for Chroma vector database."""
 
-    host: str = Field(description="Host for Chroma")
-    port: int = Field(description="Port for Chroma")
+    host: str | None = Field(default=None, description="Host for Chroma")
+    port: int | None = Field(default=None, description="Port for Chroma")
     username: str | None = Field(default=None, description="Username for Chroma")
     password: str | None = Field(default=None, description="Password for Chroma")
     path: str | None = Field(default=None, description="Path for Chroma")
