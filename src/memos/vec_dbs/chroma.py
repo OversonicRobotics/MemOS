@@ -19,13 +19,18 @@ class ChromaVecDB(BaseVecDB):
     def __init__(self, config: ChromaVecDBConfig):
         """Initialize the Qdrant vector database and the collection."""
         from chromadb import HttpClient, PersistentClient
+        from chromadb.config import DEFAULT_DATABASE, DEFAULT_TENANT
 
         self.config = config
 
         # If both host and port are None, we are running in local mode
         if self.config.host is None and self.config.port is None:
             logger.warning("Chroma is running in local mode (host and port are both None). ")
-            self.client = PersistentClient(path=self.config.path)
+            self.client = PersistentClient(
+                path=self.config.path,
+                database=self.config.database or DEFAULT_DATABASE,
+                tenant=self.config.tenant or DEFAULT_TENANT,
+            )
         else:
             auth_credentials = f"{self.config.username}:{self.config.password}"
 
@@ -34,6 +39,9 @@ class ChromaVecDB(BaseVecDB):
                 host=self.config.host,
                 port=self.config.port,
                 headers={"Authorization": f"Basic {encoded_credentials}"},
+                database=self.config.database or DEFAULT_DATABASE,
+                tenant=self.config.tenant or DEFAULT_TENANT,
+                ssl=self.config.ssl,
             )
 
         self.create_collection()

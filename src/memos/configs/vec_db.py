@@ -47,6 +47,9 @@ class ChromaVecDBConfig(BaseVecDBConfig):
     username: str | None = Field(default=None, description="Username for Chroma")
     password: str | None = Field(default=None, description="Password for Chroma")
     path: str | None = Field(default=None, description="Path for Chroma")
+    database: str | None = Field(default=None, description="Database name for Chroma")
+    tenant: str | None = Field(default=None, description="Tenant for Chroma")
+    ssl: bool = Field(default=False, description="Use SSL for Chroma connection")
 
     @model_validator(mode="after")
     def set_default_path(self):

@@ -71,6 +71,9 @@ def test_chroma_vec_db_config():
             "path",
             "username",
             "password",
+            "database",
+            "tenant",
+            "ssl",
         ],
     )
 
@@ -81,6 +84,8 @@ def test_chroma_vec_db_config():
             "vector_dimension": 768,
             "distance_metric": "cosine",
             "path": "/custom/path",
+            "database": "test_db",
+            "tenant": "test_tenant",
         },
     )
 
