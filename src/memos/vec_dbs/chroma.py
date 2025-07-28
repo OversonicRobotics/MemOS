@@ -56,9 +56,8 @@ class ChromaVecDB(BaseVecDB):
 
     def create_collection(self) -> None:
         if self.collection_exists(self.config.collection_name):
-            collection_info = self.get_collection()
             logger.warning(
-                f"Collection '{self.config.collection_name}' (vector dimension: {collection_info.config.params.vectors.size}) already exists. Skipping creation."
+                f"Collection '{self.config.collection_name}' already exists. Skipping creation."
             )
             return
 
