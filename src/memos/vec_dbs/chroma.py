@@ -1,5 +1,4 @@
 import base64
-
 from typing import Any
 
 from memos.configs.vec_db import ChromaVecDBConfig
@@ -8,16 +7,15 @@ from memos.log import get_logger
 from memos.vec_dbs.base import BaseVecDB
 from memos.vec_dbs.item import VecDBItem
 
-
 logger = get_logger(__name__)
 
 
 class ChromaVecDB(BaseVecDB):
-    """Qdrant vector database implementation."""
+    """Chroma vector database implementation."""
 
     @require_python_package(import_name="chromadb", install_command="pip install chromadb-client")
     def __init__(self, config: ChromaVecDBConfig):
-        """Initialize the Qdrant vector database and the collection."""
+        """Initialize the Chroma vector database and the collection."""
         from chromadb import HttpClient, PersistentClient
         from chromadb.config import DEFAULT_DATABASE, DEFAULT_TENANT
 
@@ -149,14 +147,14 @@ class ChromaVecDB(BaseVecDB):
 
         Args:
             filter: Payload filters to match against stored items
-            scroll_limit: Maximum number of items to retrieve per scroll request
+            limit: Maximum number of items to retrieve per scroll request
 
         Returns:
             List of items including vectors and payload that match the filter"""
 
         response = self.get_collection().get(where=filter, limit=limit)
 
-        logger.info(f"Qdrant retrieve by filter completed with {len(response['ids'])} results.")
+        logger.info(f"Chroma retrieve by filter completed with {len(response['ids'])} results.")
 
         if not response["ids"]:
             return []
@@ -231,7 +229,6 @@ class ChromaVecDB(BaseVecDB):
         If an item with the same ID exists, it will be updated.
         Otherwise, it will be added as a new item.
         """
-        # Qdrant's upsert operation already handles this logic
         self.add(data)
 
     def delete(self, ids: list[str]) -> None:
