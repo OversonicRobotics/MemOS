@@ -4551,6 +4551,17 @@ files = [
 dev = ["build", "flake8", "mypy", "pytest", "twine"]
 
 [[package]]
+name = "pysqlite3"
+version = "0.5.4"
+description = "DB-API 2.0 interface for Sqlite 3.x"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "pysqlite3-0.5.4.tar.gz", hash = "sha256:fbc69bfdc0cb43a5badd5403b126d5151371b5037e0397ba9802bb440c5b0021"},
+]
+
+[[package]]
 name = "pytest"
 version = "8.4.1"
 description = "pytest: simple powerful testing with Python"
@@ -7098,4 +7109,4 @@ tree-mem = ["neo4j", "schedule"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "24d9b579e450b5e6685b0459abd2436e8773600c4d704a644e8bb7d2154d5090"
+content-hash = "d6a939efb565a43a071a3ea6f8235eec8d8b92032e93c98803af56c82d98c57f"
