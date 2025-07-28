@@ -1,4 +1,5 @@
 import base64
+import json
 from typing import Any
 
 from memos.configs.vec_db import ChromaVecDBConfig
@@ -44,6 +45,35 @@ class ChromaVecDB(BaseVecDB):
 
         self.create_collection()
 
+    @staticmethod
+    def serialize_metadata(d: dict) -> dict:
+        """Return a copy of the dict with list/dict values converted to JSON strings."""
+        result = {}
+        for key, value in d.items():
+            if isinstance(value, (dict, list)):
+                result[key] = json.dumps(value)
+            else:
+                result[key] = value
+        return result
+
+    @staticmethod
+    def deserialize_metadata(d: dict) -> dict:
+        """Return a copy of the dict with JSON string values parsed back to dict or list."""
+        result = {}
+        for key, value in d.items():
+            if isinstance(value, str):
+                try:
+                    parsed = json.loads(value)
+                    if isinstance(parsed, (dict, list)):
+                        result[key] = parsed
+                    else:
+                        result[key] = value
+                except (json.JSONDecodeError, TypeError):
+                    result[key] = value
+            else:
+                result[key] = value
+        return result
+
     def get_collection(self):
         """Get a collection by name."""
         try:
@@ -81,7 +111,7 @@ class ChromaVecDB(BaseVecDB):
             return False
 
     def search(
-        self, query_vector: list[float], top_k: int, filter: dict[str, Any] | None = None
+            self, query_vector: list[float], top_k: int, filter: dict[str, Any] | None = None
     ) -> list[VecDBItem]:
         """
         Search for similar items in the database.
@@ -105,7 +135,7 @@ class ChromaVecDB(BaseVecDB):
             VecDBItem(
                 id=response["ids"][idx],
                 vector=response["embeddings"][idx] if response["embeddings"] else None,
-                payload=response["metadatas"][idx] if response["metadatas"] else None,
+                payload=self.deserialize_metadata(response["metadatas"][idx]) if response["metadatas"] else None,
                 score=response["distances"][idx] if response["distances"] else None,
             )
             for idx, _ in enumerate(response["ids"])
@@ -121,7 +151,7 @@ class ChromaVecDB(BaseVecDB):
         return VecDBItem(
             id=response["ids"][0],
             vector=response["embeddings"][0],
-            payload=response["metadatas"][0],
+            payload=self.deserialize_metadata(response["metadatas"][0]),
         )
 
     def get_by_ids(self, ids: list[str]) -> list[VecDBItem]:
@@ -135,7 +165,7 @@ class ChromaVecDB(BaseVecDB):
         return [
             VecDBItem(
                 id=response["ids"][idx],
-                vector=response["embeddings"][idx] if response["embeddings"] else None,
+                vector=self.deserialize_metadata(response["embeddings"][idx]) if response["embeddings"] else None,
                 payload=response["metadatas"][idx] if response["metadatas"] else None,
             )
             for idx, _ in enumerate(response["ids"])
@@ -162,7 +192,7 @@ class ChromaVecDB(BaseVecDB):
         return [
             VecDBItem(
                 id=response["ids"][idx],
-                vector=response["embeddings"][idx] if response["embeddings"] else None,
+                vector=self.deserialize_metadata(response["embeddings"][idx]) if response["embeddings"] else None,
                 payload=response["metadatas"][idx] if response["metadatas"] else None,
             )
             for idx, _ in enumerate(response["ids"])
@@ -197,7 +227,7 @@ class ChromaVecDB(BaseVecDB):
                 item = VecDBItem.from_dict(item)
             ids.append(str(item.id))
             embeddings.append(item.vector)
-            metadatas.append(item.payload.get("metadata"))
+            metadatas.append(self.serialize_metadata(item.payload.get("metadata")))
             documents.append(item.payload.get("memory"))
 
         self.get_collection().upsert(
@@ -215,12 +245,12 @@ class ChromaVecDB(BaseVecDB):
             self.get_collection().upsert(
                 ids=[id],
                 embeddings=[data.vector],
-                metadatas=[data.payload.get("metadata")],
+                metadatas=[self.serialize_metadata(data.payload.get("metadata"))],
                 documents=[data.payload.get("memory")],
             )
         else:
             # For payload-only updates
-            self.get_collection().upsert(ids=[id], metadatas=[data.payload.get("metadata")])
+            self.get_collection().upsert(ids=[id], metadatas=[self.serialize_metadata(data.payload.get("metadata"))])
 
     def upsert(self, data: list[VecDBItem | dict[str, Any]]) -> None:
         """
@@ -243,5 +273,5 @@ class ChromaVecDB(BaseVecDB):
         Args:
             fields (list[str]): List of field names to index (as keyword).
         """
-        # TODO implement
-        # chromadb does not implement crete index in the version 0.4.20.dev0
+        # chromadb does not implement crete index
+        pass
