@@ -7,7 +7,7 @@ cffi==1.17.1 ; python_version >= "3.10" and python_version < "4.0" and platform_
 charset-normalizer==3.4.2 ; python_version >= "3.10" and python_version < "4.0"
 click==8.2.1 ; python_version >= "3.10" and python_version < "4.0"
 colorama==0.4.6 ; python_version >= "3.10" and python_version < "4.0" and (platform_system == "Windows" or sys_platform == "win32")
-cryptography==45.0.5 ; python_version >= "3.10" and python_version < "4.0"
+cryptography==46.0.5 ; python_version >= "3.10" and python_version < "4.0"
 cyclopts==3.22.2 ; python_version >= "3.10" and python_version < "4.0"
 distro==1.9.0 ; python_version >= "3.10" and python_version < "4.0"
 dnspython==2.7.0 ; python_version >= "3.10" and python_version < "4.0"
